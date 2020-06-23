@@ -12,6 +12,8 @@ I wanted to have active directory single sign-on without having to set up a serv
 
 ## Quick Start Guide
 
+Note: This example is intended for Active Directory domain-joined computers, but should work fine if you're not.
+
 1. Clone or download [OpenIddict-WindowsAuth](https://github.com/auroris/OpenIddict-WindowsAuth) and open it in Visual Studio 2019. Then run it. Make sure the server is working correctly by checking out the contents of the web browser it spawned.
 
 2. If you're not on a domain-joined machine, modify Startup.cs as follows to output at least one example group name:
