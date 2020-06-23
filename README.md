@@ -2,13 +2,13 @@
 
 An example customization of Umbraco 8 using OpenID Connect to implement single-sign on for the back office. In this example, the OpenID Connect server is assumed to be https://github.com/auroris/OpenIddict-WindowsAuth.
 
-## Customizations to the default Umbraco 8 installation
-
-The App_Start folder was created and two new files were added: [IdentityServerAuthExtension.cs](https://github.com/auroris/Umbraco8SSO/blob/master/App_Start/IdentityServerAuthExtension.cs) and [UmbracoCustomOwinStartup.cs](https://github.com/auroris/Umbraco8SSO/blob/master/App_Start/UmbracoCustomOwinStartup.cs). In addition, owin:appStartup in [Web.config](https://github.com/auroris/Umbraco8SSO/blob/master/Web.config#L48) was modified from UmbracoDefaultOwinStartup to UmbracoCustomOwinStartup.
-
 ## Rationale
 
 I wanted to have active directory single sign-on without having to set up a service account or use active directory membership providers. This example is geared for my OpenID Connect server, but can be easily generalized for any OpenID Connect server.
+
+## Customizations to the default Umbraco 8 installation
+
+The App_Start folder was created and two new files were added: [IdentityServerAuthExtension.cs](https://github.com/auroris/Umbraco8SSO/blob/master/App_Start/IdentityServerAuthExtension.cs) and [UmbracoCustomOwinStartup.cs](https://github.com/auroris/Umbraco8SSO/blob/master/App_Start/UmbracoCustomOwinStartup.cs). In addition, `owin:appStartup` in [Web.config](https://github.com/auroris/Umbraco8SSO/blob/master/Web.config#L48) was modified from `UmbracoDefaultOwinStartup` to `UmbracoCustomOwinStartup`.
 
 ## Quick Start Guide
 
