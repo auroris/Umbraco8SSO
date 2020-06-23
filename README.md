@@ -16,15 +16,13 @@ Note: This example is intended for Active Directory domain-joined computers, but
 
 1. Clone or download [OpenIddict-WindowsAuth](https://github.com/auroris/OpenIddict-WindowsAuth) and open it in Visual Studio 2019. Then run it. Make sure the server is working correctly by checking out the contents of the web browser it spawned.
 
-2. If you're not on a domain-joined machine, modify Startup.cs as follows to output at least one example group name:
-
-   Above [line 154](https://github.com/auroris/OpenIddict-WindowsAuth/blob/master/Startup.cs#L154), add something like the following:
+2. If you're not on an active-directory domain joined machine, modify Startup.cs above [line 154](https://github.com/auroris/OpenIddict-WindowsAuth/blob/master/Startup.cs#L154), add at least one role claim:
 
    ```csharp 
    identity.AddClaim(ClaimTypes.Role, "TEST GROUP", Destinations.IdentityToken);
    ```
 
-3. Clone or download this repository. Run it in Visual Studio 2019 and go through the Umbraco setup process.
+3. Clone or download Umbraco8SSO. Run it in Visual Studio 2019 and go through the Umbraco setup process.
 
 4. Create a group named "TEST GROUP" in Umbraco back office and then log out.
 
