@@ -18,6 +18,11 @@ public class UmbracoCustomOwinStartup : UmbracoDefaultOwinStartup
     protected override void ConfigureUmbracoAuthentication(IAppBuilder app)
     {
         base.ConfigureUmbracoAuthentication(app);
-        app.ConfigureBackOfficeIdentityServerAuth("Forces");
+        app.ConfigureBackOfficeOpenIDConnectAuth(
+            "http://localhost:5000/", // Location of the OpenIDConnect server
+            "http://localhost:61299/umbraco/", // Location of the back office
+            "/AuthenticationError", // Location of the error page
+            "Forces" // Login caption text
+            );
     }
 }

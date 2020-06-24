@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
-using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Umbraco.Core.Models.Identity;
@@ -13,38 +12,38 @@ using Umbraco.Web.Security;
 /// 
 /// Make sure you install the NuGet package Microsoft.Owin.Security.OpenIDConnect v4.0.1 or better
 /// </summary>
-public static class IdentityServerAuthExtension
+public static class OpenIDAuthConnectExtension
 {
-    public static readonly String authority = "http://localhost:5000/"; // Where the OpenID Connect server is located
-    public static readonly String redirectUri = "http://localhost:61299/umbraco/"; // Where Umbraco back office is located
-
     /// <summary>
     /// Configures Umbraco to use a customized OpenID Connect authentication. This example is meant to work with https://github.com/auroris/OpenIddict-WindowsAuth
     /// which provides Windows Integrated Authentication single-sign on for an active directory domain. Active Directory groups are sent in
     /// via a role claims collection and can allow a user to be automatically assigned to equivalent Umbraco groups.
     /// </summary>
     /// <param name="app">OWIN Middleware pipeline constructor</param>
-    /// <param name="umbracoContext">Umbraco's accessor class</param>
+    /// <param name="authority">The location of your OpenID Connect server</param>
+    /// <param name="redirectUri">The location of the Umbraco back office; where OpenID Connect will redirect to when login and logout actions are performed</param>
+    /// <param name="authErrorUri">The location of the authentication error page</param>
     /// <param name="caption">Customize the text shown on the back office login screen; it will be in the format of "Login with " + caption</param>
     /// <param name="style">Umbraco button icon style</param>
     /// <param name="icon">Umbraco button icon</param>
-    public static void ConfigureBackOfficeIdentityServerAuth(this IAppBuilder app, 
+    public static void ConfigureBackOfficeOpenIDConnectAuth(this IAppBuilder app,
+        string authority, string redirectUri, string authErrorUri,
         string caption = "OpenId Connect", string style = "btn-microsoft", string icon = "fa-windows")
     {
         var identityOptions = new OpenIdConnectAuthenticationOptions
         {
             ClientId = "u-client-bo",
             SignInAsAuthenticationType = Umbraco.Core.Constants.Security.BackOfficeExternalAuthenticationType,
-            Authority = IdentityServerAuthExtension.authority,
-            RedirectUri = IdentityServerAuthExtension.redirectUri,
-            PostLogoutRedirectUri = IdentityServerAuthExtension.redirectUri,
+            Authority = authority,
+            RedirectUri = redirectUri,
+            PostLogoutRedirectUri = redirectUri,
             ResponseType = "code id_token token",
             Scope = "openid profile email roles",
             RequireHttpsMetadata = false,
         };
         identityOptions.ForUmbracoBackOffice(style, icon);
         identityOptions.Caption = caption;
-        identityOptions.AuthenticationType = IdentityServerAuthExtension.authority;
+        identityOptions.AuthenticationType = authority;
 
         // Auto-linking options
         var autoLinkOptions = new ExternalSignInAutoLinkOptions(
@@ -112,7 +111,7 @@ public static class IdentityServerAuthExtension
                 // I'm looking for. If there are no roles, then the user's not authorized to log into back office.
                 if (notification.AuthenticationTicket.Identity.FindFirst(ClaimTypes.Role) == null)
                 {
-                    notification.OwinContext.Response.Redirect("/AuthenticationError");
+                    notification.OwinContext.Response.Redirect(authErrorUri);
                     notification.HandleResponse();
                 }
 
@@ -120,7 +119,7 @@ public static class IdentityServerAuthExtension
             },
             AuthenticationFailed = (notification) =>
             {
-                notification.OwinContext.Response.Redirect("/AuthenticationError");
+                notification.OwinContext.Response.Redirect(authErrorUri);
                 notification.HandleResponse();
 
                 return Task.FromResult(0);
