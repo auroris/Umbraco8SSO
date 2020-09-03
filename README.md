@@ -8,7 +8,14 @@ I wanted to have active directory single sign-on without having to set up a serv
 
 ## Customizations to the default Umbraco 8 installation
 
-Files were added to `App_Start` and [Web.config](https://github.com/auroris/Umbraco8SSO/blob/master/Web.config#L48)'s key `owin:appStartup` was modified from `UmbracoDefaultOwinStartup` to `UmbracoCustomOwinStartup`.
+The following files were added to `App_Start`:
+
+* OpenIDAuthConnectExtension.cs
+* UmbracoCustomOwinStartup.cs 
+
+[Web.config](https://github.com/auroris/Umbraco8SSO/blob/master/Web.config) was modified as follows:
+
+* appSetting\owin:appStartup was modified from `UmbracoDefaultOwinStartup` to `UmbracoCustomOwinStartup`.
 
 ## Quick Start Guide
 
