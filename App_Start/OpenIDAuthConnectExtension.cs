@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin;
+using Microsoft.Owin.Host.SystemWeb;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Web;
 using Umbraco.Core.Models.Identity;
 using Umbraco.Core.Models.Membership;
 using Umbraco.Web.Security;
@@ -32,24 +36,28 @@ public static class OpenIDAuthConnectExtension
     {
         var identityOptions = new OpenIdConnectAuthenticationOptions
         {
-            ClientId = "u-client-bo",
+            ClientId = "umbraco-backoffice",
+            Caption = caption,
             SignInAsAuthenticationType = Umbraco.Core.Constants.Security.BackOfficeExternalAuthenticationType,
             Authority = authority,
             RedirectUri = redirectUri,
             PostLogoutRedirectUri = redirectUri,
-            ResponseType = "code id_token token",
+            ResponseType = "token id_token",
             Scope = "openid profile email roles",
             RequireHttpsMetadata = false,
+            CookieManager = new OwinCookieManager(new SystemWebCookieManager()),
         };
         identityOptions.ForUmbracoBackOffice(style, icon);
-        identityOptions.Caption = caption;
-        identityOptions.AuthenticationType = authority;
+        identityOptions.AuthenticationType = authority; // Here instead of in the constructor because of https://issues.umbraco.org/issue/U4-7121
 
         // Auto-linking options
         var autoLinkOptions = new ExternalSignInAutoLinkOptions(
             autoLinkExternalAccount: true,
-            defaultUserGroups: new string[]{ }, // declare an empty array so no groups are auto added
+            defaultUserGroups: new string[] { }, // declare an empty array so no groups are auto added
             defaultCulture: null);
+
+        // Disallow user from being able to unlink their account from this authentication provider
+        autoLinkOptions.AllowManualLinking = false;
 
         // This callback will occur if a user is being created and automatically linked to the
         // OpenID Connect identity. The user has not been created in Umbraco's back office
@@ -111,7 +119,8 @@ public static class OpenIDAuthConnectExtension
                 // I'm looking for. If there are no roles, then the user's not authorized to log into back office.
                 if (notification.AuthenticationTicket.Identity.FindFirst(ClaimTypes.Role) == null)
                 {
-                    notification.OwinContext.Response.Redirect(authErrorUri);
+                    Exception ex = new Exception("No valid role was provided");
+                    notification.OwinContext.Response.Redirect(authErrorUri + "?e=" + HttpUtility.UrlEncode(ex.ToString()));
                     notification.HandleResponse();
                 }
 
@@ -119,7 +128,7 @@ public static class OpenIDAuthConnectExtension
             },
             AuthenticationFailed = (notification) =>
             {
-                notification.OwinContext.Response.Redirect(authErrorUri);
+                notification.OwinContext.Response.Redirect(authErrorUri + "?e=" + HttpUtility.UrlEncode(notification.Exception.ToString()));
                 notification.HandleResponse();
 
                 return Task.FromResult(0);
@@ -127,9 +136,13 @@ public static class OpenIDAuthConnectExtension
         };
 
         // Attach the auto-linking configuration to the identity server configuration
-        identityOptions.SetExternalSignInAutoLinkOptions(autoLinkOptions);
+        //identityOptions.SetExternalSignInAutoLinkOptions(autoLinkOptions);
+        identityOptions.SetBackOfficeExternalLoginProviderOptions(new BackOfficeExternalLoginProviderOptions
+        {
+            AutoLinkOptions = autoLinkOptions
+        });
 
-        // Attach the OpeNID Connect identity server configuration to the OWIN middleware stack
+        // Attach the OpenID Connect identity server configuration to the OWIN middleware stack
         app.UseOpenIdConnectAuthentication(identityOptions);
     }
 
